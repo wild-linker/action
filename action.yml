@@ -21,7 +21,7 @@ runs:
         mkdir "${RUNNER_TEMP}/wild-install"
 
         curl --silent -L \
-          "https://github.com/davidlattimore/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz" \
+          "https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz" \
           | tar -xz -C "${RUNNER_TEMP}/wild-install" --strip-components=1
 
         mkdir -p "$HOME/.cargo"

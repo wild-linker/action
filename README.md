@@ -2,7 +2,7 @@
 
 Depend on this action to use Wild when building rust code.
 
-See the main [wild repo](https://github.com/davidlattimore/wild) for more details about wild.
+See the main [wild repo](https://github.com/wild-linker/wild) for more details about wild.
 
 Example:
 
@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - uses: davidlattimore/wild-action@latest
+      - uses: wild-linker/action@latest
       - run: cargo test
 ```
 
@@ -25,7 +25,7 @@ The above workflow will use the latest version of wild. If you'd like to pin to 
 you can instead do:
 
 ```yml
-      - uses: davidlattimore/wild-action@0.6.0
+      - uses: wild-linker/action@0.6.0
 ```
 
 This action writes the following to `~/.cargo/config.toml`:
