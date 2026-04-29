@@ -7,6 +7,14 @@ inputs:
     description: "Wild version to use"
     required: false
     default: "0.8.0"
+  download-retries:
+    description: "Number of times to retry the Wild download on transient failures (passed to curl --retry)."
+    required: false
+    default: "5"
+  download-retry-delay:
+    description: "Delay in seconds between download retry attempts (passed to curl --retry-delay)."
+    required: false
+    default: "2"
 
 runs:
   using: "composite"
@@ -23,7 +31,8 @@ runs:
         url="https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz"
         archive="${RUNNER_TEMP}/wild.tar.gz"
         curl --fail-with-body --show-error --location \
-             --retry 5 --retry-all-errors --retry-delay 2 \
+             --retry "${{ inputs.download-retries }}" --retry-all-errors \
+             --retry-delay "${{ inputs.download-retry-delay }}" \
              --output "${archive}" \
              "${url}"
 
