@@ -7,6 +7,10 @@ inputs:
     description: "Wild version to use"
     required: false
     default: "0.8.0"
+  download-retries:
+    description: "Number of times to retry the Wild download on transient failures (passed to curl --retry). curl uses exponential backoff between retries."
+    required: false
+    default: "5"
 
 runs:
   using: "composite"
@@ -20,9 +24,15 @@ runs:
 
         mkdir "${RUNNER_TEMP}/wild-install"
 
-        curl --silent -L \
-          "https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz" \
-          | tar -xz -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        url="https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz"
+        archive="${RUNNER_TEMP}/wild.tar.gz"
+        curl --fail-with-body --show-error --location \
+             --retry "${{ inputs.download-retries }}" --retry-all-errors \
+             --output "${archive}" \
+             "${url}"
+
+        tar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        rm -f "${archive}"
 
         mkdir -p "$HOME/.cargo"
         for libc in gnu musl; do
