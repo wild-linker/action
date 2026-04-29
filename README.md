@@ -38,3 +38,20 @@ rustflags = ["-Clink-arg=--ld-path=${{ github.action_path }}/wild"]
 
 If you specify `rustflags` via a `.cargo/config.toml` in your repository or by setting `RUSTFLAGS`,
 then that will override the effect of this action.
+
+## Inputs
+
+| Input                  | Default | Description                                                                                       |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `wild-version`         | `0.8.0` | Wild version to install.                                                                          |
+| `download-retries`     | `5`     | Number of times to retry the Wild download on transient failures (passed to `curl --retry`).      |
+| `download-retry-delay` | `2`     | Delay in seconds between download retry attempts (passed to `curl --retry-delay`).                |
+
+Example overriding the retry behaviour:
+
+```yml
+      - uses: wild-linker/action@latest
+        with:
+          download-retries: "10"
+          download-retry-delay: "5"
+```
