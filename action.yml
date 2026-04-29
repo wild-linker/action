@@ -20,9 +20,19 @@ runs:
 
         mkdir "${RUNNER_TEMP}/wild-install"
 
-        curl --silent -L \
-          "https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz" \
-          | tar -xz -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        url="https://github.com/wild-linker/wild/releases/download/${{ inputs.wild-version }}/wild-linker-${{ inputs.wild-version }}-${target_arch}-unknown-linux-gnu.tar.gz"
+        archive="${RUNNER_TEMP}/wild.tar.gz"
+
+        # Download with retries and proper error reporting so a transient
+        # CDN/redirect glitch doesn't manifest as a confusing
+        # "gzip: stdin: not in gzip format" tar failure.
+        curl --fail-with-body --show-error --location \
+             --retry 5 --retry-all-errors --retry-delay 2 \
+             --output "${archive}" \
+             "${url}"
+
+        tar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1
+        rm -f "${archive}"
 
         mkdir -p "$HOME/.cargo"
         for libc in gnu musl; do
