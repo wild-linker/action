@@ -15,7 +15,7 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - uses: wild-linker/action@latest
       - run: cargo test
@@ -25,7 +25,7 @@ The above workflow will use the latest version of wild. If you'd like to pin to 
 you can instead do:
 
 ```yml
-      - uses: wild-linker/action@0.6.0
+      - uses: wild-linker/action@0.9.0
 ```
 
 This action writes the following to `~/.cargo/config.toml`:
