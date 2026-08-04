@@ -6,7 +6,7 @@ inputs:
   wild-version:
     description: "Wild version to use"
     required: false
-    default: "0.9.0"
+    default: "0.10.0"
   download-retries:
     description: "Number of times to retry the Wild download on transient failures (passed to curl --retry). curl uses exponential backoff between retries."
     required: false
