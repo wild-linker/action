@@ -1,12 +1,12 @@
 name: "wild"
-description: "Use the Wild linker when building Rust code"
+description: "Use the Wild linker when building Rust code for Linux or WebAssembly"
 author: "Wild authors"
 
 inputs:
   wild-version:
     description: "Wild version to use"
     required: false
-    default: "0.10.0"
+    default: "0.11.0"
   download-retries:
     description: "Number of times to retry the Wild download on transient failures (passed to curl --retry). curl uses exponential backoff between retries."
     required: false
@@ -35,11 +35,36 @@ runs:
         rm -f "${archive}"
 
         mkdir -p "$HOME/.cargo"
-        for libc in gnu musl; do
-          TARGET="target.${target_arch}-unknown-linux-${libc}"
-          if ! grep "${TARGET}" "$HOME/.cargo/config.toml" 2>/dev/null; then
-                echo -e "# Added by wild GitHub Action\n[${TARGET}]\nlinker = \"clang\"\nrustflags = [\"-Clink-arg=--ld-path=${RUNNER_TEMP}/wild-install/wild\"]\n" >>"$HOME/.cargo/config.toml"
+        wild_bin="${RUNNER_TEMP}/wild-install/wild"
+        config="$HOME/.cargo/config.toml"
+
+        add_target_config() {
+          local target_key="$1"
+          local body="$2"
+          if grep -F -x -q "[${target_key}]" "$config" 2>/dev/null; then
+            return 0
           fi
+          printf '# Added by wild GitHub Action\n[%s]\n%s\n\n' "$target_key" "$body" >>"$config"
+        }
+
+        printf -v linux_body 'linker = "clang"\nrustflags = ["-Clink-arg=--ld-path=%s"]' "$wild_bin"
+        for libc in gnu musl; do
+          add_target_config "target.${target_arch}-unknown-linux-${libc}" "$linux_body"
         done
+
+        wild_version="${{ inputs.wild-version }}"
+        wild_version="${wild_version#v}"
+        wild_version="${wild_version%%+*}"
+        wild_version="${wild_version%%-*}"
+        if [[ "$wild_version" =~ ^([0-9]+)\.([0-9]+)(\.[0-9]+)?$ ]]; then
+          wasm_major=$((10#${BASH_REMATCH[1]}))
+          wasm_minor=$((10#${BASH_REMATCH[2]}))
+          if (( wasm_major > 0 || wasm_minor >= 11 )); then
+            printf -v wasm_body 'rustflags = ["-C", "linker=%s", "-C", "linker-flavor=wasm-ld"]' "$wild_bin"
+            for triple in wasm32-unknown-unknown wasm32-wasip1 wasm32-wasip1-threads; do
+              add_target_config "target.${triple}" "$wasm_body"
+            done
+          fi
+        fi
       shell: bash
       if: runner.os == 'Linux'
